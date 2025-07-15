@@ -1,24 +1,38 @@
 "use client";
 
+import { useChat } from "@ai-sdk/react";
+import { Loader2, Send } from "lucide-react";
 import { ChatMessage } from "~/components/chat-message";
 import { SignInModal } from "~/components/sign-in-modal";
 
 interface ChatProps {
   userName: string;
+  isAuthenticated: boolean;
 }
 
-const messages = [
-  {
-    id: "1",
-    content: "Hello, how are you?",
-    role: "user",
-  },
-];
+export const ChatPage = ({ userName, isAuthenticated }: ChatProps) => {
+  const {
+    messages,
+    input,
+    handleInputChange,
+    handleSubmit,
+    isLoading,
+  } = useChat();
 
-export const ChatPage = ({ userName }: ChatProps) => {
-  const handleFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-  };
+  if (!isAuthenticated) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-gray-200 mb-2">
+            Sign in to start chatting
+          </h2>
+          <p className="text-gray-400">
+            You need to be logged in to use the chat feature.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -28,12 +42,11 @@ export const ChatPage = ({ userName }: ChatProps) => {
           role="log"
           aria-label="Chat messages"
         >
-          {messages.map((message, index) => {
+          {messages.map((message) => {
             return (
               <ChatMessage
-                key={index}
-                text={message.content}
-                role={message.role}
+                key={message.id}
+                message={message}
                 userName={userName}
               />
             );
@@ -42,32 +55,34 @@ export const ChatPage = ({ userName }: ChatProps) => {
 
         <div className="border-t border-gray-700">
           <form
-            onSubmit={handleFormSubmit}
+            onSubmit={handleSubmit}
             className="mx-auto max-w-[65ch] p-4"
           >
             <div className="flex gap-2">
               <input
-                // value={input}
-                // onChange={handleInputChange}
+                value={input}
+                onChange={handleInputChange}
                 placeholder="Say something..."
                 autoFocus
                 aria-label="Chat input"
                 className="flex-1 rounded border border-gray-700 bg-gray-800 p-2 text-gray-200 placeholder-gray-400 focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50"
+                disabled={isLoading}
               />
               <button
-                type="button"
-                // onClick={isLoading ? handleStop : handleFormSubmit}
-                disabled={false}
+                type="submit"
+                disabled={isLoading || !input.trim()}
                 className="rounded bg-gray-700 px-4 py-2 text-white hover:bg-gray-600 focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50 disabled:hover:bg-gray-700"
               >
-                {/* {isLoading ? <Square className="size-4" /> : "Send"} */}
+                {isLoading ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
               </button>
             </div>
           </form>
         </div>
       </div>
 
-      <SignInModal isOpen={false} onClose={() => {}} />
+      <SignInModal isOpen={false} onClose={() => {
+        // Modal is not used in this implementation
+      }} />
     </>
   );
 };
